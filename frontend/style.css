@@ -1,0 +1,77 @@
+/* General Styling */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #4c81b7;
+    color: #333;
+  }
+  
+  /* Header Styling */
+  header {
+    background-color: #67adf8;
+    color: white;
+    text-align: center;
+    padding: 1rem;
+  }
+  
+  header nav {
+    margin-top: 1rem;
+  }
+  
+  header button {
+    padding: 0.5rem 1rem;
+    margin: 0.5rem;
+    border: none;
+    background-color: white;
+    color: #007BFF;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  header button:hover {
+    background-color: #0056b3;
+    color: white;
+  }
+  
+  /* Main Styling */
+  main {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Task List Styling */
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  li {
+    background: #639bd3;
+    border: 1px solid #cccccc;
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  /* Calendar Section Styling */
+  #calendar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 300px;
+    border: 1px solid #ccc;
+    background: #88b3df;
+    margin-top: 1rem;
+  }
+  
+  .hidden {
+    display: none;
+  }
+  
