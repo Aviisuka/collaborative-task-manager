@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Manager</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>Task Manager</h1>
+      <nav>
+        <button id="view-tasks">Task List</button>
+        <button id="view-calendar">Calendar View</button>
+      </nav>
+    </header>
+
+    <main>
+      <!-- Task List Section -->
+      <section id="task-list" class="view">
+        <h2>Tasks</h2>
+        <ul id="tasks">
+          <!-- Task items will be dynamically loaded -->
+        </ul>
+      </section>
+
+      <!-- Calendar Section -->
+      <section id="calendar-view" class="view hidden">
+        <h2>Calendar</h2>
+        <div id="calendar">
+          <!-- Calendar will be rendered here -->
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
