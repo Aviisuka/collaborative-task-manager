@@ -39,11 +39,71 @@ function displayTasks(tasks) {
     tasks.forEach((task) => {
       const li = document.createElement("li");
       li.textContent = `${task.title} - ${task.status}`;
-      taskList.appendChild(li);
+     li.setAttribute("data-id", task.id);
+    
+    // Edit Button
+    const editBtn = document.createElement("button");
+    editBtn.textContent = "Edit";
+    editBtn.onclick = () => editTask(task.id);
+    
+    // Delete Button
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "Delete";
+    deleteBtn.onclick = () => deleteTask(task.id);
+
+    li.appendChild(editBtn);
+    li.appendChild(deleteBtn);
+    taskList.appendChild(li);
+  })};
+}
+
+// Add a new task
+async function addTask() {
+  const title = document.getElementById("task-title").value;
+  const description = document.getElementById("task-description").value;
+
+  if (!title.trim()) {
+    alert("Task title is required!");
+    return;
+  }
+  const newTask = { title, description };
+  await fetch("http://127.0.0.1:5000/tasks", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(newTask),
+  });
+  fetchTasks();  // Refresh the task list
+}
+ // Clear input fields and refresh task list
+ document.getElementById("task-title").value = "";
+ document.getElementById("task-description").value = "";
+ fetchTasks();
+
+// Edit an existing task
+async function editTask(taskId) {
+  const newTitle = prompt("Enter new title:");
+  if (newTitle) {
+    await fetch(`http://127.0.0.1:5000/tasks/${taskId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: newTitle }),
     });
+    fetchTasks();
   }
 }
 
+// Delete a task
+async function deleteTask(taskId) {
+  if (confirm("Are you sure you want to delete this task?")) {
+    await fetch(`http://127.0.0.1:5000/tasks/${taskId}`, {
+      method: "DELETE",
+    });
+    fetchTasks();
+  }
+}
+
+
 // Initialize the page by fetching tasks
 fetchTasks();
+
 
