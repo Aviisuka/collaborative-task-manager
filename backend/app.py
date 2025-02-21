@@ -8,7 +8,7 @@ app = Flask(__name__)
 CORS(app)
 
 # MySQL Database Configuration (updating credentials)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Isukaptla%402105@localhost/Isukapatla'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:isukapatla%402105@localhost/Isukapatla'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = True  # Enable logging of all SQL queries
 
@@ -21,59 +21,27 @@ class Task(db.Model):
     title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(200), nullable=True)
     status = db.Column(db.String(20), default="To Do")
+    position = db.Column(db.Integer, nullable=False, default=0)
 
 # Create Tables
-with app.app_context():
+# @app.before_first_request
+def create_tables():
     db.create_all()
+    if Task.query.count() == 0:  # Add sample tasks if none exist
+        sample_tasks = [
+            Task(title="Complete project setup", description="Finish Flask and SQL setup", status="In Progress"),
+            Task(title="Create frontend UI", description="Develop task list and calendar views", status="To Do"),
+            Task(title="Test database connection", description="Ensure Flask connects to MySQL", status="Done"),
+        ]
+        db.session.add_all(sample_tasks)
+        db.session.commit()
+        print("✅ Sample tasks added!")
+
 
 @app.route('/')
 def home():
     return "Welcome to the Task Manager API!"
-
-# # Route to test database connection using SQLAlchemy
-# @app.route('/tasks', methods=['GET'])
-# def get_tasks():
-#     try:
-#         tasks = Task.query.all()  # Query to get all tasks from the database
-#         return jsonify([{"id": t.id, "title": t.title, "status": t.status} for t in tasks])
-#     except Exception as e:
-#         return jsonify({"error": str(e)}), 500  # Return the error message if something goes wrong
-
-# # Route to test database connection directly using PyMySQL
-# @app.route('/test-db', methods=['GET'])
-# @cross_origin()
-# def test_db():
-#     try:
-#         connection = pymysql.connect(
-#             host='localhost',
-#             user='root',
-#             password='Saikumar@2105',
-#             database='Isukapatla'
-#         )
-#         with connection.cursor() as cursor:
-#             cursor.execute("SELECT 1")
-#             result = cursor.fetchone()
-#             return jsonify({"result": result})  # Return result from direct database connection
-#     except Exception as e:
-#         return jsonify({"error": str(e)}), 500  # If there's an error, return it as JSON
-#     finally:
-#         connection.close()  # Close the connection once done
-
-# if __name__ == "__main__":
-#     app.run(debug=True)
-#     # Create tables if they don't exist before starting the Flask app
-#     with app.app_context():
-#         db.create_all()
-#         if Task.query.count() == 0:  # Add tasks only if the database is empty
-#                 sample_tasks = [
-#                     Task(title="Complete UI for task list", status="In Progress"),
-#                     Task(title="Create calendar placeholder", status="To Do"),
-#                     Task(title="Connect backend with frontend", status="Done")
-#                 ]
-#                 db.session.add_all(sample_tasks)
-#                 db.session.commit()
-#                 print("Sample tasks added!")
-#     # app.run(debug=True)
+# ✅ GET - Fetch all tasks
 @app.route('/tasks', methods=['GET'])
 def get_tasks():
     try:
@@ -113,6 +81,21 @@ def update_task(task_id):
         return jsonify({"message": "Task updated successfully"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+# ✅ Reorder tasks based on drag-and-drop
+@app.route('/tasks/reorder', methods=['PUT'])
+def reorder_tasks():
+    try:
+        data = request.json
+        for task_data in data['tasks']:
+            task = Task.query.get(task_data['id'])
+            if task:
+                task.position = task_data['position']
+        db.session.commit()
+        return jsonify({"message": "Tasks reordered successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 # ✅ DELETE - Delete a task
 @app.route('/tasks/<int:task_id>', methods=['DELETE'])
