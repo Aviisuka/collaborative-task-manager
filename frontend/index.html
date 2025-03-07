@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Task Manager</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.5.0/frappe-gantt.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
 </head>
 <body>
   <div id="app">
@@ -13,31 +16,35 @@
       <nav>
         <button id="view-tasks">Task List</button>
         <button id="view-calendar">Calendar View</button>
+        <button id="view-gantt">Gantt Chart</button>
       </nav>
     </header>
 
     <main>
-       <!-- Task Addition Form -->
       <section id="add-task">
-      <h2>Add a New Task</h2>
-      <input type="text" id="task-title" placeholder="Enter task title">
-      <input type="text" id="task-description" placeholder="Enter task description">
-      <button onclick="addTask()">Add Task</button>
-    </section>
-      <!-- Task List Section -->
-      <section id="task-list" class="view">
-        <h2>Tasks</h2>
-        <ul id="tasks">
-        <li draggable="true" class="task-item" data-id="1">Task Name</li>
-        </ul>
+        <h2>Add a New Task</h2>
+        <form id="taskForm">
+          <input type="text" id="taskTitle" placeholder="Task Title" required />
+          <input type="text" id="task-description" placeholder="Enter task description">
+          <input type="date" id="taskStartDate" required />
+          <input type="date" id="taskEndDate" required />
+          <button type="submit">Add Task</button>
+        </form>        
       </section>
 
-      <!-- Calendar Section -->
+      <section id="task-list" class="view">
+        <h2>Tasks</h2>
+        <ul id="tasks"></ul>
+      </section>
+
       <section id="calendar-view" class="view hidden">
-        <h2>Calendar</h2>
-        <div id="calendar">
-          <!-- Calendar will be rendered here -->
-        </div>
+        <h2>Calendar View</h2>
+        <div id="calendar"></div>
+      </section>
+
+      <section id="gantt-view" class="view hidden">
+        <h2>Gantt Chart</h2>
+        <div id="gantt"></div>
       </section>
     </main>
   </div>
