@@ -1,33 +1,153 @@
 // Toggle views
 const taskListView = document.getElementById("task-list");
 const calendarView = document.getElementById("calendar-view");
+const ganttView = document.getElementById("gantt-view");
+
+// Toggle between task list and calendar view
 document.getElementById("view-tasks").addEventListener("click", () => {
   taskListView.classList.remove("hidden");
   calendarView.classList.add("hidden");
+  ganttView.classList.add("hidden");
   fetchTasks(); // Fetch tasks whenever Task List is clicked
 });
+
 document.getElementById("view-calendar").addEventListener("click", () => {
   calendarView.classList.remove("hidden");
   taskListView.classList.add("hidden");
+  ganttView.classList.add("hidden");
+  initCalendar(); // Call initCalendar when the calendar view is clicked
 });
+
+document.getElementById("view-gantt").addEventListener("click", () => {
+  ganttView.classList.remove("hidden");
+  taskListView.classList.add("hidden");
+  calendarView.classList.add("hidden");
+  initGanttChart();  // Initialize Gantt chart when the view is switched
+});
+
+// Initialize the calendar
+function initCalendar() {
+  const calendarEl = document.getElementById("calendar");
+
+  const calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    events: async function(info, successCallback, failureCallback) {
+      try {
+        const response = await fetch('http://127.0.0.1:5000/tasks');
+        const tasks = await response.json();
+        
+        // Ensure tasks contain valid start and end dates
+        const events = tasks.map(task => ({
+          title: task.title,
+          start: task.startDate,  // Ensure startDate is in ISO 8601 format
+          end: task.endDate,      // Ensure endDate is in ISO 8601 format
+        }));
+        successCallback(events);
+      } catch (error) {
+        console.error('Error fetching tasks for calendar:', error);
+        failureCallback(error);
+      }
+    },
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'dayGridMonth,timeGridWeek,timeGridDay'
+    }
+  });
+
+  calendar.render();
+}
+
+
+// Initialize the Gantt chart
+async function initGanttChart() {
+  const tasks = await fetchTasks();  // Ensure tasks are fetched correctly
+
+  // Validate tasks data
+  if (!tasks || tasks.length === 0) {
+    console.error("No tasks found for Gantt chart.");
+    return;
+  }
+
+  const ganttData = tasks.map(task => ({
+    id: task.id,
+    name: task.title,
+    start: task.startDate,  // Ensure startDate is in ISO format
+    end: task.endDate,      // Ensure endDate is in ISO format
+    progress: task.status === "Done" ? 100 : 0
+  }));
+
+  const ganttContainer = document.getElementById("gantt");
+  if (ganttContainer) {
+    const gantt = new Gantt("#gantt", ganttData, {
+      view_modes: ['Quarter Day', 'Half Day', 'Day', 'Week', 'Month'],
+      bar_height: 20,
+      padding: 18,
+    });
+    gantt.render();
+  } else {
+    console.error("Gantt container not found.");
+  }
+}
+
+async function fetchTasks() {
+  try {
+    const response = await fetch('http://127.0.0.1:5000/tasks');
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching tasks:", error);
+    return [];
+  }
+}
+
+// Adding task
+document.getElementById("taskForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const task = {
+    title: document.getElementById("taskTitle").value,
+    description: document.getElementById("task-description").value,
+    startDate: document.getElementById("taskStartDate").value,
+    endDate: document.getElementById("taskEndDate").value
+  };
+
+  fetch('http://127.0.0.1:5000/tasks', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(task)
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log('New task added:', data);
+    // Reload tasks after adding
+    fetchTasks();  // Call fetchTasks instead of loadTasks
+  })
+  .catch(error => console.error('Error adding task:', error));
+});
+
 
 // Fetch tasks from Flask backend
 async function fetchTasks() {
   try {
-    console.log ("Fetching tasks...");
+    console.log("Fetching tasks...");
     const response = await fetch("http://127.0.0.1:5000/tasks");
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const tasks = await response.json();
-    console.log("tasls fetched:", tasks)
+    console.log("tasks fetched:", tasks);
     displayTasks(tasks);
+    return tasks;  // Return tasks for Gantt Chart
   } catch (error) {
     console.error("Error fetching tasks:", error);
     alert("Failed to fetch tasks. Please check the console for details.");
+    return [];  // Return an empty array if there was an error
   }
 }
 
+// Display tasks in task list view
 function displayTasks(tasks) {
   const taskList = document.getElementById("tasks");
   taskList.innerHTML = ""; // Clear existing tasks
@@ -40,7 +160,6 @@ function displayTasks(tasks) {
       li.textContent = `${task.title} - ${task.status}`;
       li.className = "task-item";
       li.setAttribute("data-id", task.id);
-      li.classList.add("task-item");
       li.setAttribute("draggable", "true");
 
       // Edit Button
@@ -60,28 +179,6 @@ function displayTasks(tasks) {
     initializeDragAndDrop();
   }
 }
-
-// Add a new task
-async function addTask() {
-  const title = document.getElementById("task-title").value;
-  const description = document.getElementById("task-description").value;
-
-  if (!title.trim()) {
-    alert("Task title is required!");
-    return;
-  }
-  const newTask = { title, description };
-  await fetch("http://127.0.0.1:5000/tasks", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(newTask),
-  });
-  fetchTasks();  // Refresh the task list
-}
- // Clear input fields and refresh task list
- document.getElementById("task-title").value = "";
- document.getElementById("task-description").value = "";
- fetchTasks();
 
 // Edit an existing task
 async function editTask(taskId) {
@@ -107,7 +204,6 @@ async function deleteTask(taskId) {
 }
 
 // Drag-and-Drop Functions
-// Drag-and-Drop Functionality
 function initializeDragAndDrop() {
   const taskList = document.getElementById("tasks");
   let draggedElement = null;
@@ -152,7 +248,5 @@ function getDragAfterElement(container, y) {
   }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
 
-
-
-// Initialize the page by fetching tasks
+// Initialize the page by fetching tasks and rendering them
 fetchTasks();
