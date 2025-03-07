@@ -1,77 +1,137 @@
 /* General Styling */
 body {
-    font-family: 'Arial', sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #4c81b7;
-    color: #333;
-  }
-  
-  /* Header Styling */
-  header {
-    background-color: #67adf8;
-    color: white;
-    text-align: center;
-    padding: 1rem;
-  }
-  
-  header nav {
-    margin-top: 1rem;
-  }
-  
-  header button {
-    padding: 0.5rem 1rem;
-    margin: 0.5rem;
-    border: none;
-    background-color: white;
-    color: #007BFF;
-    font-weight: bold;
-    cursor: pointer;
-  }
-  
-  header button:hover {
-    background-color: #0056b3;
-    color: white;
-  }
-  
-  /* Main Styling */
-  main {
-    max-width: 800px;
-    margin: 2rem auto;
-    padding: 1rem;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Task List Styling */
-  ul {
-    list-style: none;
-    padding: 0;
-  }
-  
-  li {
-    background: #639bd3;
-    border: 1px solid #cccccc;
-    margin: 0.5rem 0;
-    padding: 0.5rem;
-    border-radius: 4px;
-    display: flex;
-    justify-content: space-between;
-  }
-  
-  /* Calendar Section Styling */
-  #calendar {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 300px;
-    border: 1px solid #ccc;
-    background: #88b3df;
-    margin-top: 1rem;
-  }
-  
-  .hidden {
-    display: none;
-  }
-  
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #d4d2d2; /* Soft gray background for a clean look */
+  color: #333; /* Dark gray text for contrast */
+}
+
+/* Header Styling */
+header {
+  background-color: #2c3e50; /* Dark blue-gray for a sophisticated header */
+  color: white; /* White text for contrast */
+  text-align: center;
+  padding: 1rem;
+}
+
+header nav {
+  margin-top: 1rem;
+}
+
+header button {
+  padding: 0.5rem 1rem;
+  margin: 0.5rem;
+  border: none;
+  background-color: #3498db; /* Bright blue for buttons */
+  color: white; /* White text for contrast */
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 4px; /* Rounded corners */
+  transition: background-color 0.3s; /* Smooth hover transition */
+}
+
+header button:hover {
+  background-color: #2980b9; /* Darker blue on hover */
+}
+
+/* Main Content Styling */
+main {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 1rem;
+  background: #ddecfc; /* White background for content */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+/* Task List Styling */
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  background: #ecf0f1; /* Light gray background for tasks */
+  border: 1px solid #bdc3c7; /* Light gray border */
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  border-radius: 4px; /* Rounded corners */
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* Center items vertically */
+  transition: background-color 0.3s; /* Smooth hover transition */
+}
+
+li:hover {
+  background-color: #d5dbdb; /* Slightly darker gray on hover */
+}
+
+/* Calendar Section Styling */
+#calendar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 500px;
+  border: 1px solid #6bafdc; /* Light gray border */
+  background: #b0bcc0; /* Light gray background */
+  margin-top: 1rem;
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+}
+
+/* Hidden Elements */
+.hidden {
+  display: none;
+}
+
+/* Task Item Styling */
+.task-item {
+  cursor: grab; /* Grab cursor for draggable items */
+  background-color: #3498db; /* Bright blue background */
+  color: white; /* White text for contrast */
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px; /* Rounded corners */
+  transition: opacity 0.3s; /* Smooth transition for dragging */
+}
+
+.task-item.dragging {
+  opacity: 0.5; /* Semi-transparent when dragging */
+}
+/* FullCalendar Custom Styling */
+.fc-header-toolbar {
+  background-color: #2c3e50; /* Dark blue-gray for header */
+  color: white; /* White text for contrast */
+  padding: 10px;
+  border-radius: 8px 8px 0 0; /* Rounded corners on top */
+}
+
+.fc-button {
+  background-color: #3498db; /* Bright blue for buttons */
+  color: white; /* White text for contrast */
+  border: none;
+  border-radius: 4px; /* Rounded corners */
+  padding: 5px 10px;
+  margin: 0 5px;
+  cursor: pointer;
+  transition: background-color 0.3s; /* Smooth hover transition */
+}
+
+.fc-button:hover {
+  background-color: #2980b9; /* Darker blue on hover */
+}
+
+.fc-event {
+  background-color: #3498db; /* Bright blue for events */
+  border: none;
+  border-radius: 4px; /* Rounded corners */
+  padding: 5px;
+  color: white; /* White text for contrast */
+  cursor: pointer;
+  transition: background-color 0.3s; /* Smooth hover transition */
+}
+
+.fc-event:hover {
+  background-color: #2980b9; /* Darker blue on hover */
+}
