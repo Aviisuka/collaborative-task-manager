@@ -1,23 +1,26 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, session
 from flask_sqlalchemy import SQLAlchemy
-from flask_cors import CORS, cross_origin
+from flask_cors import CORS
+from flask_migrate import Migrate
+from flask_session import Session
+from datetime import datetime, timedelta
 import pymysql
-from flask_migrate import Migrate  
-
 
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)
 
-# MySQL Database Configuration (updating credentials)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/Isukapatla'
+# Configure session
+app.config['SESSION_TYPE'] = 'filesystem'
+Session(app)
+
+# MySQL Database Configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Saikumar%402105@localhost/Isukapatla'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = True  # Enable logging of all SQL queries
 
 # Initialize Database
 db = SQLAlchemy(app)
-
-# Initialize Flask-Migrate
 migrate = Migrate(app, db)
 
 # Define Task Model
@@ -27,26 +30,26 @@ class Task(db.Model):
     description = db.Column(db.String(200), nullable=True)
     status = db.Column(db.String(20), default="To Do")
     position = db.Column(db.Integer, nullable=False, default=0)
-    startDate = db.Column(db.DateTime, nullable=True)  
-    endDate = db.Column(db.DateTime, nullable=True)   
+    startDate = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)  # Default to current time
+    endDate = db.Column(db.DateTime, nullable=False, default=datetime.utcnow )  # Default to tomorrow
+
+# Define User Model for Authentication
+class User(db.Model):   
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(100), unique=True, nullable=False)
+    password = db.Column(db.String(100), nullable=False)
 
 # Create Tables
-# @app.before_first_request
 def create_tables():
-    db.create_all()
-    if Task.query.count() == 0:  # Add sample tasks if none exist
-        sample_tasks = [
-            Task(title="Complete project setup", description="Finish Flask and SQL setup", status="In Progress"),
-            Task(title="Create frontend UI", description="Develop task list and calendar views", status="To Do"),
-            Task(title="Test database connection", description="Ensure Flask connects to MySQL", status="Done"),
-        ]
-        db.session.add_all(sample_tasks)
-        db.session.commit()
-        print("✅ Sample tasks added!")
-# Route for homepage
+    with app.app_context():
+        db.create_all()
+        print("✅ Database and tables created successfully!")
+
+# Home Route
 @app.route('/')
 def home():
-    return "Welcome to the Task Mbreanager API!"
+    return "Welcome to the Task Manager API!"
+
 # ✅ GET - Fetch all tasks
 @app.route('/tasks', methods=['GET'])
 def get_tasks():
@@ -58,13 +61,14 @@ def get_tasks():
             "description": t.description,
             "status": t.status,
             "position": t.position,
-            "startDate": t.startDate.isoformat() if t.startDate else None,  
-            "endDate": t.endDate.isoformat() if t.endDate else None        
+            "startDate": t.startDate.isoformat() if t.startDate else datetime.utcnow().isoformat(),
+            "endDate": t.endDate.isoformat() if t.endDate else (datetime.utcnow() + timedelta(days=1)).isoformat(),
         } for t in tasks])
     except Exception as e:
         print(f"Error fetching tasks: {str(e)}")
         return jsonify({"error": "An error occurred while fetching tasks."}), 500
 
+# ✅ POST - Create a new task
 @app.route('/tasks', methods=['POST'])
 def create_task():
     try:
@@ -74,16 +78,17 @@ def create_task():
             description=data.get("description", ""),
             status=data.get("status", "To Do"),
             position=data.get("position", 0),
-            startDate=data.get("startDate"),  
-            endDate=data.get("endDate")     
+            startDate=data.get("startDate", datetime.utcnow()),  # Default to current time
+            endDate=data.get("endDate", datetime.utcnow() + timedelta(days=1)),  # Default to tomorrow
         )
         db.session.add(new_task)
         db.session.commit()
         return jsonify({"message": "Task created successfully", "task_id": new_task.id}), 201
     except Exception as e:
         print(f"Error creating task: {str(e)}")
-        return jsonify({"error": "An error occurred while creating the task. Please try again later."}), 500
+        return jsonify({"error": "An error occurred while creating the task."}), 500
 
+# ✅ PUT/PATCH - Update an existing task
 @app.route('/tasks/<int:task_id>', methods=['PUT', 'PATCH'])
 def update_task(task_id):
     try:
@@ -95,26 +100,10 @@ def update_task(task_id):
         task.title = data.get("title", task.title)
         task.description = data.get("description", task.description)
         task.status = data.get("status", task.status)
-        task.startDate = data.get("startDate", task.startDate) 
-        task.endDate = data.get("endDate", task.endDate)        
         db.session.commit()
         return jsonify({"message": "Task updated successfully"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-# ✅ Reorder tasks based on drag-and-drop
-@app.route('/tasks/reorder', methods=['PUT'])
-def reorder_tasks():
-    try:
-        data = request.json
-        for task_data in data['tasks']:
-            task = Task.query.get(task_data['id'])
-            if task:
-                task.position = task_data['position']
-        db.session.commit()
-        return jsonify({"message": "Tasks reordered successfully"}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
 
 # ✅ DELETE - Delete a task
 @app.route('/tasks/<int:task_id>', methods=['DELETE'])
@@ -130,5 +119,11 @@ def delete_task(task_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# Run the Flask app
 if __name__ == "__main__":
+    with app.app_context():
+        # Check if tables already exist
+        if not db.engine.has_table("task"):
+            db.create_all()
+            print("✅ Database and tables created successfully!")
     app.run(debug=True)
