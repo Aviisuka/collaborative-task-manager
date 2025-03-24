@@ -1,54 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Task Manager</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.5.0/frappe-gantt.min.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-timeline/7.4.2/vis-timeline-graph2d.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-timeline/7.4.2/vis-timeline-graph2d.min.js"></script>
 </head>
 <body>
-  <div id="app">
-    <header>
-      <h1>Task Manager</h1>
-      <nav>
-        <button id="view-tasks">Task List</button>
-        <button id="view-calendar">Calendar View</button>
-        <button id="view-gantt">Gantt Chart</button>
-      </nav>
-    </header>
+    <div id="app">
+        <header>
+            <h1>Task Manager</h1>
+            <nav>
+                <button id="view-tasks">Task List</button>
+                <button id="view-calendar">Calendar View</button>
+                <button id="view-timeline">Timeline View</button>
+            </nav>
+        </header>
 
-    <main>
-      <section id="add-task">
-        <h2>Add a New Task</h2>
-        <form id="taskForm">
-          <input type="text" id="taskTitle" placeholder="Task Title" required />
-          <input type="text" id="task-description" placeholder="Enter task description">
-          <input type="date" id="taskStartDate" required />
-          <input type="date" id="taskEndDate" required />
-          <button type="submit">Add Task</button>
-        </form>        
-      </section>
+        <main>
+            <section id="add-task">
+                <h2>Add a New Task</h2>
+                <form id="taskForm">
+                    <input type="text" id="taskTitle" placeholder="Task Title" required />
+                    <input type="text" id="taskDescription" placeholder="Enter task description">
+                    <input type="date" id="taskStartDate" required />
+                    <input type="date" id="taskEndDate" required />
+                    <button type="submit">Add Task</button>
+                </form>        
+            </section>
 
-      <section id="task-list" class="view">
-        <h2>Tasks</h2>
-        <ul id="tasks"></ul>
-      </section>
+            <section id="task-list" class="view">
+                <h2>Tasks</h2>
+                <ul id="tasks"></ul>
+            </section>
 
-      <section id="calendar-view" class="view hidden">
-        <h2>Calendar View</h2>
-        <div id="calendar"></div>
-      </section>
+            <section id="calendar-view" class="view hidden">
+                <h2>Calendar View</h2>
+                <div id="calendar"></div>
+            </section>
 
-      <section id="gantt-view" class="view hidden">
-        <h2>Gantt Chart</h2>
-        <div id="gantt"></div>
-      </section>
-    </main>
-  </div>
+            <section id="timeline-view" class="view hidden">
+              <h2>Timeline View</h2>
+              <div class="timeline-filters">
+                  <button id="jump-to-today">Today</button>
+                  <button id="jump-to-tomorrow">Tomorrow</button>
+                  <button id="jump-to-next-week">Next Week</button>
+              </div>
+              <div id="timeline"></div>
+          </section>
+        </main>
+    </div>
 
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
