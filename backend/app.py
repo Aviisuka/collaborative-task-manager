@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, session
+from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_migrate import Migrate
@@ -15,7 +15,7 @@ app.config['SESSION_TYPE'] = 'filesystem'
 Session(app)
 
 # MySQL Database Configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Saikumar%402105@localhost/Isukapatla'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/Test'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False  # Disable SQL query logging
 
@@ -38,6 +38,7 @@ class Task(db.Model):
 class Subtask(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(200), nullable=True)
     task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
     completed = db.Column(db.Boolean, default=False)
     position = db.Column(db.Integer, nullable=False, default=0)
@@ -134,6 +135,7 @@ def get_subtasks(task_id):
         return jsonify([{
             "id": s.id,
             "title": s.title,
+            "description": s.description or "",
             "completed": s.completed,
             "position": s.position
         } for s in subtasks])
@@ -146,6 +148,7 @@ def create_subtask(task_id):
         data = request.json
         new_subtask = Subtask(
             title=data["title"],
+            description=data.get("description", ""),
             task_id=task_id,
             completed=data.get("completed", False),
             position=data.get("position", 0)
