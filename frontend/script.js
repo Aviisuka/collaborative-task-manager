@@ -93,7 +93,13 @@ function hideAllViews() {
     timelineView.classList.add("hidden");
     analyticsView.classList.add("hidden");
 }
-
+function showSuccessMessage(message) {
+    const toast = document.createElement('div');
+    toast.className = 'success-toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
 // Timeline Navigation
 function jumpToToday() {
     const today = new Date();
@@ -234,7 +240,7 @@ async function handleTaskSubmit(e) {
             const errorData = await response.json();
             throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
         }
-
+        showSuccessMessage('Task added successfully!');
         form.reset();
         const tasks = await fetchTasks();
         
@@ -389,8 +395,17 @@ async function updateProgress(taskId) {
 function showAddSubtaskForm(taskId) {
     document.getElementById("subtaskTaskId").value = taskId;
     addSubtaskSection.classList.remove("hidden");
+    
+    // Add explanation text
+    const explanation = document.createElement('p');
+    explanation.className = 'subtask-explanation';
+    explanation.textContent = 'Subtasks help break your task into smaller, manageable steps. Add as many as you need.';
+    
+    // Insert the explanation at the top of the form
+    if (!addSubtaskSection.querySelector('.subtask-explanation')) {
+        addSubtaskSection.insertBefore(explanation, addSubtaskSection.firstChild);
+    }
 }
-
 async function handleSubtaskSubmit(e) {
     e.preventDefault();
     const form = e.target;
@@ -402,12 +417,14 @@ async function handleSubtaskSubmit(e) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 title: form.subtaskTitle.value,
+                description: form.subtaskDescription.value || "",
                 completed: false,
                 position: 0
             }),
         });
 
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        showSuccessMessage('Subtask added successfully!');
 
         form.reset();
         addSubtaskSection.classList.add("hidden");
@@ -427,17 +444,31 @@ async function toggleSubtasks(taskId) {
     
     if (subtasksList.classList.contains('hidden')) {
         const subtasks = await fetchSubtasks(taskId);
-        subtasksList.innerHTML = subtasks.length ? "" : "<li>No subtasks</li>";
+        subtasksList.innerHTML = subtasks.length ? "" : "<li>No subtasks yet. Add some to break down this task</li>";
         
         subtasks.forEach(subtask => {
             const li = document.createElement('li');
             li.innerHTML = `
-                <input type="checkbox" ${subtask.completed ? 'checked' : ''} 
-                       onchange="toggleSubtaskCompletion(${subtask.id}, this.checked)">
-                <span class="${subtask.completed ? 'completed' : ''}">${subtask.title}</span>
+           <div class="subtask-item ${subtask.completed ? 'completed' : ''}" data-id="${subtask.id}">
+                    <input type="checkbox" ${subtask.completed ? 'checked' : ''}
+                           onchange="toggleSubtaskCompletion(${subtask.id}, this.checked)">
+                    <span class="subtask-title">${subtask.title}</span>
+                    ${subtask.description ? `<div class="subtask-desc">${subtask.description}</div>` : ''}
+                </div>
             `;
             subtasksList.appendChild(li);
-        });
+            subtasksList.querySelectorAll('.subtask-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    // Don't toggle if clicking on checkbox
+                    if (e.target.tagName === 'INPUT') return;
+                    
+                    const desc = this.querySelector('.subtask-desc');
+                    if (desc) {
+                        desc.classList.toggle('show');
+                    }
+                });
+            });
+        }); 
         
         button.textContent = 'Hide Subtasks';
         subtasksList.classList.remove('hidden');
@@ -447,7 +478,7 @@ async function toggleSubtasks(taskId) {
     }
 }
 
-async function toggleSubtaskCompletion(subtaskId, completed) {
+window.toggleSubtaskCompletion = async function toggleSubtaskCompletion(subtaskId, completed) {
     try {
         const response = await fetch(`http://127.0.0.1:5000/subtasks/${subtaskId}`, {
             method: 'PUT',
@@ -456,7 +487,10 @@ async function toggleSubtaskCompletion(subtaskId, completed) {
         });
         
         if (!response.ok) throw new Error('Failed to update subtask');
-        fetchTasks();
+        const subtaskItem = document.querySelector(`.subtask-item[data-id="${subtaskId}"]`);
+        if (subtaskItem) {
+            subtaskItem.classList.toggle('completed', completed);
+        }
     } catch (error) {
         console.error('Error updating subtask:', error);
     }
@@ -777,42 +811,64 @@ function renderAnalytics(tasks) {
         <p><span class="legend-color" style="background-color:#4CAF50"></span> 76-100%: ${progressData[3]}</p>
     `;
 
-    // Task Duration Chart
+    // Task Duration Chart:
     const durationData = tasks
-        .map(task => {
-            try {
-                const start = task.startDate ? new Date(task.startDate) : new Date();
-                const end = task.endDate ? new Date(task.endDate) : new Date();
-                const duration = Math.max(0, (end - start) / (1000 * 60 * 60 * 24)); // Duration in days
-                return {
-                    title: task.title.length > 20 ? task.title.substring(0, 17) + '...' : task.title,
-                    duration: duration
-                };
-            } catch (e) {
-                return null;
-            }
-        })
-        .filter(d => d !== null && d.duration > 0)
-        .sort((a, b) => b.duration - a.duration)
-        .slice(0, 5); // Top 5 longest tasks
-    
+    .map(task => {
+        try {
+            const start = task.startDate ? new Date(task.startDate) : new Date();
+            const end = task.endDate ? new Date(task.endDate) : new Date();
+            const duration = Math.max(0, (end - start) / (1000 * 60 * 60 * 24));
+            return {
+                title: task.title.length > 15 ? task.title.substring(0, 12) + '...' : task.title,
+                duration: duration,
+                priority: task.priority
+            };
+        } catch (e) {
+            return null;
+        }
+    })
+    .filter(d => d !== null && d.duration > 0)
+    .sort((a, b) => b.duration - a.duration);
+
     if (durationData.length > 0) {
-        const durationChart = renderHorizontalBarChart(
-            'duration-chart', 
-            durationData.map(t => t.title), 
-            durationData.map(t => t.duration), 
-            ['#2196F3', '#3F51B5', '#673AB7', '#9C27B0', '#E91E63'], 
-            'Top 5 Longest Tasks'
-        );
-        if (durationChart) activeCharts.push(durationChart);
-        
-        document.getElementById('duration-legend').innerHTML = `
-            <p>Top ${durationData.length} longest tasks by duration (days)</p>
-            ${durationData.map(t => `<p>${t.title}: ${t.duration.toFixed(1)} days</p>`).join('')}
-        `;
-    } else {
-        document.getElementById('duration-chart').parentElement.innerHTML = 
-            '<p>No duration data available for tasks</p>';
+    const durationChart = new Chart(document.getElementById('duration-chart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: durationData.map(t => t.title),
+            datasets: [{
+                data: durationData.map(t => t.duration),
+                backgroundColor: durationData.map(t => getPriorityColor(t.priority)),
+                borderWidth: 1
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            scales: { x: { beginAtZero: true } },
+            plugins: {
+                legend: { display: false },
+                title: { display: true, text: 'Task Durations (Days)' },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.raw.toFixed(1)} days (${durationData[context.dataIndex].priority} priority)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    activeCharts.push(durationChart);
+
+    document.getElementById('duration-legend').innerHTML = `
+        <p>All tasks by duration (days)</p>
+        ${durationData.map(t => `
+            <p>
+                <span class="legend-color" style="background-color:${getPriorityColor(t.priority)}"></span>
+                ${t.title}: ${t.duration.toFixed(1)} days
+            </p>
+        `).join('')}
+    `;
     }
 
     // Add click handlers for chart expansion
