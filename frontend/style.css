@@ -664,3 +664,83 @@ canvas {
   margin: 0.3rem 0;
   font-size: 0.9rem;
 }
+/* Add this to style.css */
+.subtask-explanation {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  padding: 10px;
+  margin: 10px 0;
+  font-size: 0.9em;
+  color: #6c757d;
+}
+
+.subtasks-list {
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  padding: 10px;
+  margin-top: 5px;
+}
+
+.subtasks-list li {
+  padding: 5px;
+  border-bottom: 1px solid #eee;
+}
+
+.subtasks-list li:last-child {
+  border-bottom: none;
+}
+/* Add to style.css */
+
+.subtask-content {
+  margin-left: 8px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.subtask-desc {
+  margin: 4px 0 0 0;
+  color: #666;
+  font-size: 0.9em;
+  font-style: italic;
+}
+/* Add these styles to your style.css */
+.subtask-item {
+    display: block;
+    padding: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 4px;
+}
+
+.subtask-item:hover {
+    background-color: #b5e2c8;
+}
+
+.subtask-item input[type="checkbox"] {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.subtask-item.completed {
+    text-decoration: line-through;
+    color: #888;
+}
+
+.subtask-desc {
+    display: none;
+    margin: 5px 0 0 25px;
+    padding: 8px;
+    background-color: #f8f9fa;
+    border-left: 3px solid #6c757d;
+    border-radius: 0 4px 4px 0;
+}
+
+.subtask-desc.show {
+    display: block;
+}
+
+.subtask-item .subtask-title {
+    font-weight: 500;
+}
