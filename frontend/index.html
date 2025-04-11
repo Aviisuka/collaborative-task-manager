@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -50,10 +49,15 @@
                 
                 <div id="add-subtask" class="hidden">
                     <h3>Add Subtask</h3>
+                    <p class="subtask-explanation">Subtasks break your task into smaller steps. Click on subtasks to view details.</p>
                     <form id="subtaskForm">
                         <input type="hidden" id="subtaskTaskId">
                         <input type="text" id="subtaskTitle" placeholder="Subtask Title" required>
-                        <button type="submit">Add Subtask</button>
+                        <textarea id="subtaskDescription" placeholder="Description (optional)"></textarea>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">Add Subtask</button>
+                            <button type="button" class="btn-cancel" onclick="document.getElementById('add-subtask').classList.add('hidden')">Cancel</button>
+                        </div>
                     </form>
                 </div>
             </section>
